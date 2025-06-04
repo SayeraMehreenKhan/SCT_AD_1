@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display:
+       flex; justify-content: center; align-items: center;
+      height: 100vh; background: #1f1f2e; font-family: 'Segoe UI', sans-serif;
+    }
+    .calculator-container {
+      width: 400px; height: 550px;
+      background: rgba(255,255,255,0.05); border-radius: 20px;
+      backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(0,0,0,0.37);
+      position: relative; overflow: hidden;
+    }
+    .panel {
+      width: 100%; height: 100%; position: absolute;
+      top: 0; left: 0; padding: 20px;
+      display: none; color: #e0e0e0;
+    }
+    .panel.active { display: block; }
+    .header { font-size: 1.5rem; text-align: center; margin-bottom: 10px; letter-spacing: 1px; }
+    .display { background: rgba(0,0,0,0.3); border-radius: 10px;
+      padding: 15px; font-size: 2rem; text-align: right;
+      margin-bottom: 20px; height: 60px; overflow-x: auto;
+    }
+    .buttons { display: grid; grid-gap: 10px; }
+    button {
+      padding: 15px; font-size: 1rem; border: none;
+      border-radius: 10px; cursor: pointer;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.1);
+      transition: background 0.2s;
+    }
+    button:hover { background: rgba(255,255,255,0.2); }
+    .nav-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      font-size: 2rem; color: #aaa; cursor: pointer;
+      user-select: none; padding: 10px; transition: color 0.2s;
+    }
+    .nav-arrow:hover { color: #fff; }
+    .nav-left { left: 10px; }
+    .nav-right { right: 10px; }
+  </style>
+</head>
+<body>
+  <div class="calculator-container">
+    <!-- Basic Panel -->
+    <div id="panel-basic" class="panel active">
+      <div class="header">Basic</div>
+      <div id="display-basic" class="display">0</div>
+      <div class="buttons" style="grid-template-columns: repeat(4, 1fr);">
+        <button onclick="inputBasic('7')">7</button><button onclick="inputBasic('8')">8</button>
+        <button onclick="inputBasic('9')">9</button><button onclick="opBasic('/')">÷</button>
+        <button onclick="inputBasic('4')">4</button><button onclick="inputBasic('5')">5</button>
+        <button onclick="inputBasic('6')">6</button><button onclick="opBasic('*')">×</button>
+        <button onclick="inputBasic('1')">1</button><button onclick="inputBasic('2')">2</button>
+        <button onclick="inputBasic('3')">3</button><button onclick="opBasic('-')">−</button>
+        <button onclick="inputBasic('0')">0</button><button onclick="inputBasic('.')">.</button>
+        <button onclick="calcBasic()">=</button><button onclick="clearBasic()">C</button>
+      </div>
+    </div>
+    <!-- Scientific Panel -->
+    <div id="panel-scientific" class="panel">
+      <div class="header">Scientific</div>
+      <div id="display-sci" class="display">0</div>
+      <div class="buttons" style="grid-template-columns: repeat(4, 1fr);">
+        <button onclick="inputSci('sin(')">sin</button><button onclick="inputSci('cos(')">cos</button>
+        <button onclick="inputSci('tan(')">tan</button><button onclick="inputSci('sqrt(')">√</button>
+        <button onclick="inputSci('(')">(</button><button onclick="inputSci(')')">)</button>
+        <button onclick="inputSci('^')">^</button><button onclick="clearSci()">C</button>
+        <button onclick="inputSci('7')">7</button><button onclick="inputSci('8')">8</button>
+        <button onclick="inputSci('9')">9</button><button onclick="inputSci('/')">÷</button>
+        <button onclick="inputSci('4')">4</button><button onclick="inputSci('5')">5</button>
+        <button onclick="inputSci('6')">6</button><button onclick="inputSci('*')">×</button>
+        <button onclick="inputSci('1')">1</button><button onclick="inputSci('2')">2</button>
+        <button onclick="inputSci('3')">3</button><button onclick="inputSci('-')">−</button>
+        <button onclick="inputSci('0')">0</button><button onclick="inputSci('.')">.</button>
+        <button onclick="calcSci()">=</button><button onclick="inputSci('+')">+</button>
+      </div>
+    </div>
+    <!-- Conversion Panel -->
+    <div id="panel-conversion" class="panel">
+      <div class="header">Conversion</div>
+      <div class="conversion-group">
+        <label for="conv-type" style="display:block; margin-bottom:8px; font-size:1rem;">Select conversion type:</label>
+        <select id="conv-type" style="width:100%; padding:8px; border-radius:6px; margin-bottom:15px;">
+          <option value="bin2dec">Binary → Decimal</option>
+          <option value="dec2bin">Decimal → Binary</option>
+          <option value="c2f">°C → °F</option>
+          <option value="f2c">°F → °C</option>
+          <option value="km2mi">km → mi</option>
+          <option value="mi2km">mi → km</option>
+        </select>
+        <label for="conv-input" style="display:block; margin-bottom:8px; font-size:1rem;">Enter value:</label>
+        <input id="conv-input" type="text" placeholder="Value" style="width:100%; padding:8px; border-radius:6px; margin-bottom:15px;">
+        <button onclick="doConversion()" style="width:100%;">Convert</button>
+        <label style="display:block; margin:15px 0 8px 0; font-size:1rem;">Result:</label>
+        <div id="conv-result" class="display" style="height:50px; font-size:1.5rem; line-height:50px;">—</div>
+      </div>
+    </div>
+    <!-- Miscellaneous Panel -->
+    <div id="panel-misc" class="panel">
+      <div class="header">Miscellaneous</div>
+      <div class="misc-group">
+        <label style="display:block; margin-bottom:8px; font-size:1rem;">Enter parameters:</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+          <button onclick="showDateDiffInputs()">Date Diff</button>
+          <button onclick="randNumDisplay()">Random #</button>
+          <button onclick="showMortgageInputs()">Mortgage</button>
+        </div>
+        <div id="misc-inputs"></div>
+        <label style="display:block; margin:15px 0 8px 0; font-size:1rem;">Output:</label>
+        <div id="misc-output" class="display" style="height:50px; font-size:1.5rem; line-height:50px;">—</div>
+      </div>
+    </div>
+    <!-- Navigation Arrows -->
+    <div class="nav-arrow nav-left" onclick="prevPanel()">&#8249;</div>
+    <div class="nav-arrow nav-right" onclick="nextPanel()">&#8250;</div>
+  </div>
+  <script>
+    const panels = ['panel-basic','panel-scientific','panel-conversion','panel-misc'];
+    let current = 0;
+    function showPanel(i) {
+      panels.forEach((id, idx) => {
+        document.getElementById(id).classList.toggle('active', idx === i);
+      });
+    }
+    function nextPanel() { current = (current + 1) % panels.length; showPanel(current); }
+    function prevPanel() { current = (current - 1 + panels.length) % panels.length; showPanel(current); }
+
+    // Basic
+    let basicExp = '';
+    function inputBasic(v){ basicExp += v; updateBasic(); }
+    function opBasic(o){ basicExp += o; updateBasic(); }
+    function updateBasic(){ document.getElementById('display-basic').innerText = basicExp || '0'; }
+    function clearBasic(){ basicExp = ''; updateBasic(); }
+    function calcBasic(){ try{ basicExp = eval(basicExp).toString(); updateBasic(); }catch{ basicEmp = 'Error'; updateBasic(); }}
+
+    // Scientific
+    let sciExp = '';
+    function inputSci(v){ sciExp += v; document.getElementById('display-sci').innerText = sciExp; }
+    function clearSci(){ sciExp = ''; document.getElementById('display-sci').innerText = '0'; }
+    function calcSci(){
+      try{
+        let expr = sciExp.replace(/\^/g,'**').replace(/sin\(/g,'Math.sin(')
+                      .replace(/cos\(/g,'Math.cos(').replace(/tan\(/g,'Math.tan(')
+                      .replace(/sqrt\(/g,'Math.sqrt(');
+        sciExp = eval(expr).toString(); document.getElementById('display-sci').innerText = sciExp;
+      } catch{ sciExp='Error'; document.getElementById('display-sci').innerText='Error'; }
+    }
+
+    // Conversion
+    function doConversion(){
+      const type = document.getElementById('conv-type').value;
+      let val = document.getElementById('conv-input').value;
+      let res = '—';
+      switch(type){
+        case 'bin2dec': res = parseInt(val,2); break;
+        case 'dec2bin': res = parseInt(val,10).toString(2); break;
+        case 'c2f': res = (parseFloat(val)*9/5+32).toFixed(2); break;
+        case 'f2c': res = ((parseFloat(val)-32)*5/9).toFixed(2); break;
+        case 'km2mi': res = (parseFloat(val)/1.609).toFixed(2); break;
+        case 'mi2km': res = (parseFloat(val)*1.609).toFixed(2); break;
+      }
+      document.getElementById('conv-result').innerText = res;
+    }
+
+    // Miscellaneous
+    function showDateDiffInputs(){
+      document.getElementById('misc-inputs').innerHTML =
+        `<input id="d1" type="date" style="margin-bottom:8px; padding:6px; border-radius:6px; width:100%;">
+         <input id="d2" type="date" style="padding:6px; border-radius:6px; width:100%;">
+         <button onclick="calcDateDiff()" style="margin-top:10px; width:100%;">Compute</button>`;
+      document.getElementById('misc-output').innerText = '—';
+    }
+    function calcDateDiff(){
+      const d1 = new Date(document.getElementById('d1').value);
+      const d2 = new Date(document.getElementById('d2').value);
+      let years = d2.getFullYear() - d1.getFullYear();
+      let months = d2.getMonth() - d1.getMonth();
+      let days = d2.getDate() - d1.getDate();
+      if (days < 0) {
+        months--; 
+        const prevMonthEnd = new Date(d2.getFullYear(), d2.getMonth(), 0).getDate();
+        days += prevMonthEnd;
+      }
+      if (months < 0) { years--; months += 12; }
+      document.getElementById('misc-output').innerText =
+        `${years} years, ${months} months, ${days} days`;
+    }
+    function randNumDisplay(){
+      document.getElementById('misc-inputs').innerHTML = `<button onclick="computeRand()" style="width:100%;">Generate Random</button>`;
+      document.getElementById('misc-output').innerText = '—';
+    }
+    function computeRand(){ document.getElementById('misc-output').innerText = Math.random().toString(); }
+    function showMortgageInputs(){
+      document.getElementById('misc-inputs').innerHTML =
+        `<input id="mtsP" type="number" placeholder="Principal" style="margin-bottom:8px; padding:6px; border-radius:6px; width:100%;">
+         <input id="mtsR" type="number" placeholder="Annual % rate" style="margin-bottom:8px; padding:6px; border-radius:6px; width:100%;">
+         <input id="mtsN" type="number" placeholder="Months" style="padding:6px; border-radius:6px; width:100%;">
+         <button onclick="calcMortgage()" style="margin-top:10px; width:100%;">Compute</button>`;
+      document.getElementById('misc-output').innerText = '—';
+    }
+    function calcMortgage(){
+      const P = parseFloat(document.getElementById('mtsP').value);
+      const r = parseFloat(document.getElementById('mtsR').value)/100/12;
+      const n = parseFloat(document.getElementById('mtsN').value);
+      const M = (P*r)/(1-Math.pow(1+r,-n));
+      document.getElementById('misc-output').innerText = M.toFixed(2);
+    }
+  </script>
+</body>
+</html>
